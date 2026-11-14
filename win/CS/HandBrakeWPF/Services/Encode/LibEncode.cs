@@ -280,7 +280,13 @@ namespace HandBrakeWPF.Services.Encode
             
             this.ServiceLogMessage(completeMessage);
 
-            // Handling Log Data 
+            // Fork: başarılı encode'da çıktı dosyasının tarihlerini kaynak videodan kopyala.
+            if (e.Error == 0 && !this.isPreviewInstance)
+            {
+                this.CopySourceTimestamps(this.currentTask.Source, this.currentTask.Destination);
+            }
+
+            // Handling Log Data
             string hbLog = this.ProcessLogs(this.currentTask.Destination);
             long filesize = this.GetFilesize(this.currentTask.Destination);
 
@@ -291,6 +297,30 @@ namespace HandBrakeWPF.Services.Encode
                     : new EventArgs.EncodeCompletedEventArgs(true, null, string.Empty, this.currentTask.Source, this.currentTask.Destination, hbLog, filesize, e.Error));
 
             this.logInstanceManager.Deregister(Path.GetFileName(hbLog));
+        }
+
+        /// <summary>
+        /// Fork: kaynak dosyanın oluşturma ve değiştirme tarihlerini çıktı dosyasına yazar.
+        /// Kaynak bir klasörse (DVD/Blu-ray) ya da dosyalardan biri yoksa hiçbir şey yapmaz.
+        /// </summary>
+        private void CopySourceTimestamps(string source, string destination)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(source) || string.IsNullOrEmpty(destination) || !File.Exists(source) || !File.Exists(destination))
+                {
+                    return;
+                }
+
+                FileInfo src = new FileInfo(source);
+                File.SetCreationTimeUtc(destination, src.CreationTimeUtc);
+                File.SetLastWriteTimeUtc(destination, src.LastWriteTimeUtc);
+                this.ServiceLogMessage(string.Format("Kaynak tarihleri çıktıya kopyalandı (oluşturma {0:u}, değiştirme {1:u}).", src.CreationTimeUtc, src.LastWriteTimeUtc));
+            }
+            catch (Exception exc)
+            {
+                this.ServiceLogMessage("Kaynak tarihleri kopyalanamadı ..." + Environment.NewLine + exc);
+            }
         }
 
         private long GetFilesize(string destination)

@@ -1167,7 +1167,8 @@ namespace HandBrakeWPF.ViewModels
                 }
             }
 
-            foreach (Title title in this.ScannedSource.Titles)
+            // Fork: kuyruğa kaynak dosya tarihine göre eskiden yeniye ekle.
+            foreach (Title title in this.ScannedSource.Titles.OrderBy(t => GetSourceFileDate(t.SourcePath)).ToList())
             {
                 this.SelectedTitle = title;
                 var addError = this.AddToQueue(true);
@@ -1181,6 +1182,31 @@ namespace HandBrakeWPF.ViewModels
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Fork: sıralama için kaynak dosyanın tarihi. Oluşturma ve değiştirme tarihinin
+        /// erkeni alınır; kopyalanmış dosyalarda oluşturma tarihi kopyalama anı olur,
+        /// değiştirme tarihi ise çoğunlukla çekim tarihini korur.
+        /// Dosya yoksa (DVD vb.) DateTime.MaxValue döner; OrderBy kararlı olduğundan sıra bozulmaz.
+        /// </summary>
+        private static DateTime GetSourceFileDate(string path)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(path) && File.Exists(path))
+                {
+                    DateTime created = File.GetCreationTimeUtc(path);
+                    DateTime modified = File.GetLastWriteTimeUtc(path);
+                    return created < modified ? created : modified;
+                }
+            }
+            catch (Exception)
+            {
+                // Tarih okunamazsa sona koy.
+            }
+
+            return DateTime.MaxValue;
         }
 
         public void AddSelectionToQueue()
@@ -1242,7 +1268,8 @@ namespace HandBrakeWPF.ViewModels
         {
             bool foundOutOfBound = false;
 
-            foreach (SelectionTitle title in tasks)
+            // Fork: kuyruğa kaynak dosya tarihine göre eskiden yeniye ekle.
+            foreach (SelectionTitle title in tasks.OrderBy(t => GetSourceFileDate(t.Title?.SourcePath)).ToList())
             {
                 bool outOfBounds = false;
                 this.SelectedTitle = title.Title;
