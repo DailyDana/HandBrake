@@ -45,10 +45,25 @@ namespace HandBrakeWPF.Helpers
 
             string sourceOrLabelName = !string.IsNullOrEmpty(titleName) ? titleName.Trim() : sourceDisplayName?.Trim();
 
+            // Fork: isim formatı ayarlanmamışsa (boş ya da varsayılan "{source}") ve kaynak bir dosyaysa,
+            // çıktı adı kaynak dosya adıyla birebir aynı kalır: kırpma, alt çizgi/büyük harf/noktalama temizliği yok.
+            string nameFormat = userSettingService.GetUserSetting<string>(UserSettingConstants.AutoNameFormat);
+            bool keepExactSourceName = (string.IsNullOrEmpty(nameFormat) || nameFormat == Constants.Source)
+                                       && !string.IsNullOrEmpty(task.Source) && File.Exists(task.Source);
+
             if (task.Title != 0)
             {
+                string sourceName;
+                if (keepExactSourceName)
+                {
+                    sourceName = Path.GetFileNameWithoutExtension(task.Source);
+                    string exactFilename = sourceName + Path.GetExtension(GenerateDestinationFileName(task, userSettingService, sourceName, string.Empty, string.Empty, presetName));
+                    string exactPath = Path.Combine(GetAutonamePath(userSettingService, task, sourceName), exactFilename);
+                    return CheckAndHandleFilenameCollisions(exactPath, exactFilename, task, userSettingService);
+                }
+
                 // Get the Source Name and remove any invalid characters and clean it per users options.
-                string sourceName = Path.GetInvalidFileNameChars().Aggregate(sourceOrLabelName, (current, character) => current.Replace(character.ToString(), string.Empty));
+                sourceName = Path.GetInvalidFileNameChars().Aggregate(sourceOrLabelName, (current, character) => current.Replace(character.ToString(), string.Empty));
                 sourceName = CleanupSourceName(sourceName, userSettingService);
 
                 // Get the Selected Title Number
