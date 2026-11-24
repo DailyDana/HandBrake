@@ -1,0 +1,126 @@
+<!--
+    Fork: Nordik Kış açık tema. HandBrake Light.xaml yapısı + Nordik palet
+    (D:\Projects\tasarim-temalari\nordik-kis-neumorfik\TEMA.md: zemin #DFE5ED, yüzey #E6EBF1, birincil #52759A, metin #2E3846).
+-->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <SolidColorBrush x:Key="Ui.Dark" Color="#E6EBF1" />
+    <SolidColorBrush x:Key="Ui.Mid" Color="#E6EBF1" />
+    <SolidColorBrush x:Key="Ui.ToolbarHover" Color="#D3DAE4" />
+    <SolidColorBrush x:Key="Ui.Light" Color="#E6EBF1" />
+    <SolidColorBrush x:Key="Ui.Light2" Color="#EDF1F6" />
+    <SolidColorBrush x:Key="Ui.ContrastLight" Color="#C9D2DE" />
+    <SolidColorBrush x:Key="Ui.UltraLight2" Color="#D3DAE4" />
+    <SolidColorBrush x:Key="Ui.Ultralight" Color="#D3DAE4" />
+    <SolidColorBrush x:Key="Ui.Arrow" Color="#2E3846" />
+    <SolidColorBrush x:Key="Ui.ListBoxSelect" Color="#D3DAE4" />
+    <SolidColorBrush x:Key="Ui.Background" Color="#DFE5ED" />
+    <SolidColorBrush x:Key="Ui.BackgroundLight" Color="#E6EBF1" />
+    <SolidColorBrush x:Key="Ui.BackgroundDark" Color="#2E3846" />
+
+    <SolidColorBrush x:Key="Ui.Blue" Color="#52759A" />
+    <SolidColorBrush x:Key="Ui.BlueBright" Color="#3F5F80" />
+
+    <!-- Nordik ek renkler -->
+    <SolidColorBrush x:Key="Nordic.Primary" Color="#52759A" />
+    <SolidColorBrush x:Key="Nordic.Warm" Color="#B9875F" />
+    <SolidColorBrush x:Key="Nordic.Text" Color="#2E3846" />
+    <SolidColorBrush x:Key="Nordic.Text2" Color="#848C97" />
+
+    <!-- General -->
+    <SolidColorBrush x:Key="{x:Static SystemColors.WindowBrushKey}" Color="#DFE5ED" />
+    <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="#E6EBF1" />
+    <SolidColorBrush x:Key="{x:Static SystemColors.WindowTextBrushKey}" Color="#2E3846" />
+    <SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}" Color="#2E3846" />
+    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="#52759A" />
+    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="White" />
+    <SolidColorBrush x:Key="{x:Static SystemColors.MenuTextBrushKey}" Color="#2E3846" />
+    <SolidColorBrush x:Key="{x:Static SystemColors.GrayTextBrushKey}" Color="#848C97" />
+
+    <!-- Listbox -->
+    <Style TargetType="ListBox">
+        <Setter Property="Background" Value="#E6EBF1" />
+        <Setter Property="Foreground" Value="#2E3846" />
+        <Setter Property="BorderBrush" Value="#C9D2DE" />
+    </Style>
+
+    <!-- Tooltip -->
+    <Style x:Key="{x:Type ToolTip}" TargetType="ToolTip">
+        <Setter Property="Background" Value="#EDF1F6" />
+        <Setter Property="Foreground" Value="#2E3846" />
+        <Setter Property="BorderBrush" Value="#C9D2DE" />
+        <Setter Property="HasDropShadow" Value="True" />
+    </Style>
+
+    <!-- StatusBar -->
+    <Style TargetType="StatusBar">
+        <Setter Property="Background" Value="#D8DFE8" />
+        <Setter Property="Foreground" Value="#2E3846" />
+    </Style>
+
+    <!-- Text Entry Controls -->
+    <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+        <Setter Property="Background" Value="#EDF1F6" />
+        <Setter Property="Foreground" Value="#2E3846" />
+        <Setter Property="BorderBrush" Value="#C9D2DE" />
+        <Setter Property="CaretBrush" Value="#52759A" />
+        <Setter Property="SelectionBrush" Value="#83A6C2" />
+    </Style>
+
+    <!-- TextBlock -->
+    <Style x:Key="BaseTextBlockStyle" TargetType="TextBlock">
+        <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+
+    <!-- Tab Control: seçili sekme yüzey rengi + altta birincil çizgi -->
+    <Style TargetType="{x:Type TabControl}">
+        <Setter Property="Background" Value="#E6EBF1"/>
+        <Setter Property="BorderBrush" Value="#C9D2DE"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Foreground" Value="#2E3846"/>
+    </Style>
+
+    <Style TargetType="TabItem">
+        <Setter Property="Foreground" Value="#2E3846" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TabItem">
+                    <Border Name="Panel" CornerRadius="8,8,0,0" Margin="0,0,2,0">
+                        <Grid>
+                            <ContentPresenter x:Name="ContentSite" VerticalAlignment="Center" HorizontalAlignment="Center" ContentSource="Header" Margin="12,7"/>
+                            <Border x:Name="Accent" Height="2" VerticalAlignment="Bottom" Margin="8,0" CornerRadius="1" Background="#52759A" Visibility="Collapsed" />
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="Panel" Property="Background" Value="#E6EBF1" />
+                            <Setter TargetName="Accent" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <Trigger Property="IsSelected" Value="False">
+                            <Setter TargetName="Panel" Property="Background" Value="Transparent" />
+                        </Trigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsSelected" Value="False" />
+                                <Condition Property="IsMouseOver" Value="True" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="Panel" Property="Background" Value="#D8DFE8" />
+                        </MultiTrigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Glyph -->
+    <SolidColorBrush x:Key="ButtonGlyphBrush" Color="#52759A"/>
+
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="ButtonNordicLight.xaml" />
+        <ResourceDictionary Source="ToolbarNordicLight.xaml" />
+        <ResourceDictionary Source="ContextMenuNordicLight.xaml" />
+        <ResourceDictionary Source="ProgressBarNordicLight.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+
+</ResourceDictionary>

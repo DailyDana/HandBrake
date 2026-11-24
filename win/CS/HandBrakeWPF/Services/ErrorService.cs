@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="ErrorService.cs" company="HandBrake Project (http://handbrake.fr)">
 //   This file is part of the HandBrake source code - It may be used under the terms of the GNU General Public License.
 // </copyright>
@@ -107,7 +107,7 @@ namespace HandBrakeWPF.Services
         public MessageBoxResult ShowMessageBox(string message, string header, MessageBoxButton buttons, MessageBoxImage image)
         {
             AppThemeMode mode = userSettingService.GetUserSetting<AppThemeMode>(UserSettingConstants.DarkThemeMode);
-            if (mode == AppThemeMode.Dark || (mode == AppThemeMode.System && SystemInfo.IsAppsUsingDarkTheme()))
+            if (HandBrakeWPF.Themes.ThemeModeHelper.IsDark(mode) /* Fork: Nordik Koyu da koyu */)
             {
                 MessageBoxWindow window = new MessageBoxWindow();
                 window.Setup(header, message, buttons, image);

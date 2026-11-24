@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="ThemeImageConverter.cs" company="HandBrake Project (http://handbrake.fr)">
 //   This file is part of the HandBrake source code - It may be used under the terms of the GNU General Public License.
 // </copyright>
@@ -34,7 +34,7 @@ namespace HandBrakeWPF.Converters
             {
                 this.isDarkTheme = false;
             } 
-            else if (mode == AppThemeMode.Dark || (mode == AppThemeMode.System && Utilities.SystemInfo.IsAppsUsingDarkTheme()))
+            else if (HandBrakeWPF.Themes.ThemeModeHelper.IsDark(mode) /* Fork: Nordik Koyu da koyu */)
             {
                 this.isDarkTheme = true;
             }

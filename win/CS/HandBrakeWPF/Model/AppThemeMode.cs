@@ -26,5 +26,15 @@ namespace HandBrakeWPF.Model
 
         [DisplayName(typeof(Resources), "DarkTheme_None")]
         None,
+
+        // Fork: Nordik Kış teması. Kayıtlı ayarların sayısal değerleri kaymasın diye sona eklendi.
+        [DisplayName("Nordik Açık")]
+        NordicLight,
+
+        [DisplayName("Nordik Koyu")]
+        NordicDark,
+
+        [DisplayName("Nordik (Sistem)")]
+        NordicSystem,
     }
 }

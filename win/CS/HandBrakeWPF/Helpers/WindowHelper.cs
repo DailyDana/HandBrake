@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="WindowHelper.cs" company="HandBrake Project (http://handbrake.fr)">
 //   This file is part of the HandBrake source code - It may be used under the terms of the GNU General Public License.
 // </copyright>
@@ -64,7 +64,7 @@ namespace HandBrakeWPF.Helpers
             {
                 IUserSettingService userSettingService = IoCHelper.Get<IUserSettingService>();
                 AppThemeMode mode = userSettingService.GetUserSetting<AppThemeMode>(UserSettingConstants.DarkThemeMode);
-                if (mode == AppThemeMode.Dark || (mode == AppThemeMode.System && SystemInfo.IsAppsUsingDarkTheme()))
+                if (HandBrakeWPF.Themes.ThemeModeHelper.IsDark(mode) /* Fork: Nordik Koyu da koyu */)
                 {
                     var handle = new WindowInteropHelper(h).Handle;
                     Win32.SetDarkTheme(handle);
