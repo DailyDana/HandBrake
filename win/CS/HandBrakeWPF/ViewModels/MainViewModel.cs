@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="MainViewModel.cs" company="HandBrake Project (https://handbrake.fr)">
 //   This file is part of the HandBrake source code - It may be used under the terms of the GNU General Public License.
 // </copyright>
@@ -1137,7 +1137,7 @@ namespace HandBrakeWPF.ViewModels
 
         public void AddToQueueWithErrorHandling()
         {
-            this.ApplyOrientationPreset(); // Fork
+            this.ApplyOrientationPreset(true); // Fork: tek video, elle kırpma korunur
             var addError = this.AddToQueue(false);
             if (addError != null)
             {
@@ -1172,7 +1172,7 @@ namespace HandBrakeWPF.ViewModels
             foreach (Title title in QueueSortHelper.Order(this.ScannedSource.Titles, t => t.SourcePath, this.QueueSortOrder))
             {
                 this.SelectedTitle = title;
-                this.ApplyOrientationPreset(); // Fork
+                this.ApplyOrientationPreset(false); // Fork
                 var addError = this.AddToQueue(true);
                 if (addError != null)
                 {
@@ -1262,11 +1262,12 @@ namespace HandBrakeWPF.ViewModels
         }
 
         /// <summary>
-        /// Özellik açıksa, seçili başlığın yönüne göre atanmış preseti uygular. Atanmış preset zaten seçili ve
-        /// değiştirilmemişse dokunmaz; aksi hâlde kaydedilmiş hâliyle yeniden uygular (toplu eklemede her
-        /// video aynı ayarı alsın diye kaydedilmemiş değişiklikler kullanılmaz).
+        /// Özellik açıksa, seçili başlığın yönüne göre atanmış preseti uygular.
+        /// - Yön, kırpılmış görüntüye göre belirlenir (16:9 çerçeve içindeki siyah kenarlı dikey video dikey sayılır).
+        /// - Atanmış preset zaten seçiliyse hiçbir şeye dokunmaz; elle kırpma dahil kullanıcının değişiklikleri kalır.
+        /// - keepManualCrop: tek video eklerken preset değişirse elle yapılmış (Custom) kırpma yeni presete taşınır.
         /// </summary>
-        private void ApplyOrientationPreset()
+        private void ApplyOrientationPreset(bool keepManualCrop)
         {
             Title title = this.SelectedTitle;
             if (!this.OrientationPresetsEnabled || title?.Resolution == null)
@@ -1274,8 +1275,18 @@ namespace HandBrakeWPF.ViewModels
                 return;
             }
 
+            // Şu anki işin kırpması: toplu eklemede başlığın otomatik kırpması, tek eklemede kullanıcının ayarı.
+            HandBrake.Interop.Interop.Interfaces.Model.Picture.Cropping crop = this.CurrentTask?.Cropping;
+            int visibleWidth = title.Resolution.Width - (crop?.Left ?? 0) - (crop?.Right ?? 0);
+            int visibleHeight = title.Resolution.Height - (crop?.Top ?? 0) - (crop?.Bottom ?? 0);
+            if (visibleWidth <= 0 || visibleHeight <= 0)
+            {
+                visibleWidth = title.Resolution.Width;
+                visibleHeight = title.Resolution.Height;
+            }
+
             bool vertical = OrientationPresetHelper.IsVertical(
-                title.Resolution.Width, title.Resolution.Height, title.ParVal?.Width ?? 1, title.ParVal?.Height ?? 1);
+                visibleWidth, visibleHeight, title.ParVal?.Width ?? 1, title.ParVal?.Height ?? 1);
             string name = this.userSettingService.GetUserSetting<string>(vertical ? UserSettingConstants.ForkVerticalPreset : UserSettingConstants.ForkHorizontalPreset);
             if (string.IsNullOrEmpty(name))
             {
@@ -1288,12 +1299,26 @@ namespace HandBrakeWPF.ViewModels
                 return;
             }
 
-            if (object.Equals(this.selectedPreset, preset) && !this.IsModifiedPreset)
+            if (object.Equals(this.selectedPreset, preset))
             {
-                return;
+                return; // Doğru preset zaten seçili: kullanıcının değişikliklerine (elle kırpma vb.) dokunma.
             }
 
+            PictureSettingsViewModel picture = this.PictureSettingsViewModel as PictureSettingsViewModel;
+            bool manualCrop = keepManualCrop && picture != null && crop != null && picture.SelectedCropMode == HandBrakeWPF.Model.Picture.CropMode.Custom;
+            int top = crop?.Top ?? 0, bottom = crop?.Bottom ?? 0, left = crop?.Left ?? 0, right = crop?.Right ?? 0;
+
             this.PresetSelect(preset);
+
+            if (manualCrop && this.CurrentTask?.Cropping != null)
+            {
+                // Preset değişimi kırpmayı preset'in moduna döndürür; elle yapılan kırpmayı geri yaz.
+                this.CurrentTask.Cropping.Top = top;
+                this.CurrentTask.Cropping.Bottom = bottom;
+                this.CurrentTask.Cropping.Left = left;
+                this.CurrentTask.Cropping.Right = right;
+                picture.SelectedCropMode = HandBrakeWPF.Model.Picture.CropMode.Custom; // ekranı ve boyut hesabını yeniler
+            }
         }
 
         public void AddSelectionToQueue()
@@ -1360,7 +1385,7 @@ namespace HandBrakeWPF.ViewModels
             {
                 bool outOfBounds = false;
                 this.SelectedTitle = title.Title;
-                this.ApplyOrientationPreset(); // Fork
+                this.ApplyOrientationPreset(false); // Fork
                 if (limits != null && limits.IsEnabled)
                 {
                     this.SelectedPointToPoint = limits.SelectedPointToPoint;
