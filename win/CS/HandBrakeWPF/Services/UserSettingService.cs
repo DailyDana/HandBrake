@@ -288,6 +288,9 @@ namespace HandBrakeWPF.Services
             defaults.Add(UserSettingConstants.ShowAddAllToQueue, false);
             defaults.Add(UserSettingConstants.ShowAddSelectionToQueue, false);
             defaults.Add(UserSettingConstants.ForkQueueSortOrder, 0); // Fork: varsayılan tarihe göre eskiden yeniye
+            defaults.Add(UserSettingConstants.ForkOrientationPresets, false);
+            defaults.Add(UserSettingConstants.ForkVerticalPreset, string.Empty);
+            defaults.Add(UserSettingConstants.ForkHorizontalPreset, string.Empty);
             defaults.Add(UserSettingConstants.MediaPlayerPath, @"C:\Program Files\VideoLAN\vlc\vlc.exe");
             defaults.Add(UserSettingConstants.PresetMenuDisplayMode, 0);
             defaults.Add(UserSettingConstants.RightToLeftUi, 0); 

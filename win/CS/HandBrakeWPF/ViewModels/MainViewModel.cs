@@ -1137,6 +1137,7 @@ namespace HandBrakeWPF.ViewModels
 
         public void AddToQueueWithErrorHandling()
         {
+            this.ApplyOrientationPreset(); // Fork
             var addError = this.AddToQueue(false);
             if (addError != null)
             {
@@ -1171,6 +1172,7 @@ namespace HandBrakeWPF.ViewModels
             foreach (Title title in QueueSortHelper.Order(this.ScannedSource.Titles, t => t.SourcePath, this.QueueSortOrder))
             {
                 this.SelectedTitle = title;
+                this.ApplyOrientationPreset(); // Fork
                 var addError = this.AddToQueue(true);
                 if (addError != null)
                 {
@@ -1214,6 +1216,84 @@ namespace HandBrakeWPF.ViewModels
             this.NotifyOfPropertyChange(() => this.IsSortNameAsc);
             this.NotifyOfPropertyChange(() => this.IsSortNameDesc);
             this.NotifyOfPropertyChange(() => this.IsSortSourceOrder);
+        }
+
+        /* Fork: dikey / yatay videolara otomatik preset */
+
+        public bool OrientationPresetsEnabled => this.userSettingService.GetUserSetting<bool>(UserSettingConstants.ForkOrientationPresets);
+
+        public string OrientationPresetLabel => OrientationPresetHelper.Label(this.OrientationPresetsEnabled);
+
+        public string VerticalPresetMenuText => "Dikey için şu anki preseti ata  (şimdi: " + PresetNameOrNone(UserSettingConstants.ForkVerticalPreset) + ")";
+
+        public string HorizontalPresetMenuText => "Yatay için şu anki preseti ata  (şimdi: " + PresetNameOrNone(UserSettingConstants.ForkHorizontalPreset) + ")";
+
+        public void ToggleOrientationPresets()
+        {
+            this.userSettingService.SetUserSetting(UserSettingConstants.ForkOrientationPresets, !this.OrientationPresetsEnabled);
+            this.NotifyOrientationPresetChanged();
+        }
+
+        // 0 = dikey, 1 = yatay. RelayCommand yalnızca int parametre aktarır.
+        public void AssignOrientationPreset(int which)
+        {
+            if (this.selectedPreset == null)
+            {
+                return;
+            }
+
+            string key = which == 0 ? UserSettingConstants.ForkVerticalPreset : UserSettingConstants.ForkHorizontalPreset;
+            this.userSettingService.SetUserSetting(key, this.selectedPreset.Name);
+            this.NotifyOrientationPresetChanged();
+        }
+
+        private string PresetNameOrNone(string key)
+        {
+            string name = this.userSettingService.GetUserSetting<string>(key);
+            return string.IsNullOrEmpty(name) ? "seçilmedi" : name;
+        }
+
+        private void NotifyOrientationPresetChanged()
+        {
+            this.NotifyOfPropertyChange(() => this.OrientationPresetsEnabled);
+            this.NotifyOfPropertyChange(() => this.OrientationPresetLabel);
+            this.NotifyOfPropertyChange(() => this.VerticalPresetMenuText);
+            this.NotifyOfPropertyChange(() => this.HorizontalPresetMenuText);
+        }
+
+        /// <summary>
+        /// Özellik açıksa, seçili başlığın yönüne göre atanmış preseti uygular. Atanmış preset zaten seçili ve
+        /// değiştirilmemişse dokunmaz; aksi hâlde kaydedilmiş hâliyle yeniden uygular (toplu eklemede her
+        /// video aynı ayarı alsın diye kaydedilmemiş değişiklikler kullanılmaz).
+        /// </summary>
+        private void ApplyOrientationPreset()
+        {
+            Title title = this.SelectedTitle;
+            if (!this.OrientationPresetsEnabled || title?.Resolution == null)
+            {
+                return;
+            }
+
+            bool vertical = OrientationPresetHelper.IsVertical(
+                title.Resolution.Width, title.Resolution.Height, title.ParVal?.Width ?? 1, title.ParVal?.Height ?? 1);
+            string name = this.userSettingService.GetUserSetting<string>(vertical ? UserSettingConstants.ForkVerticalPreset : UserSettingConstants.ForkHorizontalPreset);
+            if (string.IsNullOrEmpty(name))
+            {
+                return;
+            }
+
+            Preset preset = this.presetService.GetPreset(name);
+            if (preset == null || preset.IsPresetDisabled)
+            {
+                return;
+            }
+
+            if (object.Equals(this.selectedPreset, preset) && !this.IsModifiedPreset)
+            {
+                return;
+            }
+
+            this.PresetSelect(preset);
         }
 
         public void AddSelectionToQueue()
@@ -1280,6 +1360,7 @@ namespace HandBrakeWPF.ViewModels
             {
                 bool outOfBounds = false;
                 this.SelectedTitle = title.Title;
+                this.ApplyOrientationPreset(); // Fork
                 if (limits != null && limits.IsEnabled)
                 {
                     this.SelectedPointToPoint = limits.SelectedPointToPoint;

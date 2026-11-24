@@ -295,6 +295,27 @@
                         </Button.ContextMenu>
                     </Button>
 
+                    <!-- Fork: dikey / yatay videolara otomatik preset -->
+                    <Button x:Name="OrientationPresetBtn" Click="QueueSortBtn_Click" ContextMenuService.IsEnabled="False"
+                            AutomationProperties.Name="Dikey ve yatay preset">
+                        <StackPanel Orientation="Horizontal">
+                            <Label VerticalAlignment="Center" Content="{Binding OrientationPresetLabel}" />
+                            <Path Height="5" Margin="2,2,2,0" VerticalAlignment="Center"
+                                  Data="M 0 0 L 4 4 L 8 0 Z" Fill="{DynamicResource ButtonGlyphBrush}" />
+                        </StackPanel>
+                        <Button.ToolTip>
+                            <TextBlock Text="Açıkken Add to Queue / Add All / Add Selection dikey videolara dikey presetini, yataylara yatay presetini uygular" />
+                        </Button.ToolTip>
+                        <Button.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Dikey/yatay presete göre otomatik seç" IsCheckable="False" IsChecked="{Binding OrientationPresetsEnabled, Mode=OneWay}" Command="{Binding RelayCommand}" CommandParameter="ToggleOrientationPresets" />
+                                <Separator />
+                                <MenuItem Header="{Binding VerticalPresetMenuText}" Command="{Binding RelayCommand}" CommandParameter="AssignOrientationPreset,0" />
+                                <MenuItem Header="{Binding HorizontalPresetMenuText}" Command="{Binding RelayCommand}" CommandParameter="AssignOrientationPreset,1" />
+                            </ContextMenu>
+                        </Button.ContextMenu>
+                    </Button>
+
                     <Button Name="Start" AutomationProperties.Name="{x:Static Properties:Resources.MainView_StartEncode}"
                         Command="{Binding RelayCommand}" CommandParameter="StartEncode"
                         Visibility="{Binding IsEncoding,
