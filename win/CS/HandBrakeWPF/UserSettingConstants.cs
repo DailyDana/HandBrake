@@ -70,6 +70,7 @@ namespace HandBrakeWPF
         public const string UiLanguage = "UiLanguage";
         public const string ShowAddAllToQueue = "ShowAddAllToQueue";
         public const string ShowAddSelectionToQueue = "ShowAddSelectionToQueue";
+        public const string ForkQueueSortOrder = "ForkQueueSortOrder"; // Fork: kuyruğa ekleme sırası (QueueSortOrder)
         public const string FileOverwriteBehaviour = "FileOverwriteBehaviour";
         public const string AutonameFileCollisionBehaviour = "AutonameFileCollisionBehaviour";
         public const string AutonameFilePrePostString = "AutonameFilePrePostString";

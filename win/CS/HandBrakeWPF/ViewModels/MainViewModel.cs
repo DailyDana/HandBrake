@@ -1167,8 +1167,8 @@ namespace HandBrakeWPF.ViewModels
                 }
             }
 
-            // Fork: kuyruğa kaynak dosya tarihine göre eskiden yeniye ekle.
-            foreach (Title title in this.ScannedSource.Titles.OrderBy(t => GetSourceFileDate(t.SourcePath)).ToList())
+            // Fork: kuyruğa seçilen sıralamaya göre ekle (araç çubuğundaki "Sıralama" düğmesi).
+            foreach (Title title in QueueSortHelper.Order(this.ScannedSource.Titles, t => t.SourcePath, this.QueueSortOrder))
             {
                 this.SelectedTitle = title;
                 var addError = this.AddToQueue(true);
@@ -1184,29 +1184,36 @@ namespace HandBrakeWPF.ViewModels
             }
         }
 
-        /// <summary>
-        /// Fork: sıralama için kaynak dosyanın tarihi. Oluşturma ve değiştirme tarihinin
-        /// erkeni alınır; kopyalanmış dosyalarda oluşturma tarihi kopyalama anı olur,
-        /// değiştirme tarihi ise çoğunlukla çekim tarihini korur.
-        /// Dosya yoksa (DVD vb.) DateTime.MaxValue döner; OrderBy kararlı olduğundan sıra bozulmaz.
-        /// </summary>
-        private static DateTime GetSourceFileDate(string path)
+        /* Fork: kuyruğa ekleme sırası */
+
+        public int QueueSortOrder => this.userSettingService.GetUserSetting<int>(UserSettingConstants.ForkQueueSortOrder);
+
+        public string QueueSortLabel => "Sıralama: " + QueueSortHelper.GetLabel(this.QueueSortOrder);
+
+        public bool IsSortDateOldest => this.QueueSortOrder == QueueSortHelper.DateOldestFirst;
+
+        public bool IsSortDateNewest => this.QueueSortOrder == QueueSortHelper.DateNewestFirst;
+
+        public bool IsSortNameAsc => this.QueueSortOrder == QueueSortHelper.NameAscending;
+
+        public bool IsSortNameDesc => this.QueueSortOrder == QueueSortHelper.NameDescending;
+
+        public bool IsSortSourceOrder => this.QueueSortOrder == QueueSortHelper.SourceOrder;
+
+        // RelayCommand yalnızca int parametre aktarır: CommandParameter="SetQueueSortOrder,2".
+        public void SetQueueSortOrder(int mode)
         {
-            try
+            if (mode >= QueueSortHelper.DateOldestFirst && mode <= QueueSortHelper.SourceOrder)
             {
-                if (!string.IsNullOrEmpty(path) && File.Exists(path))
-                {
-                    DateTime created = File.GetCreationTimeUtc(path);
-                    DateTime modified = File.GetLastWriteTimeUtc(path);
-                    return created < modified ? created : modified;
-                }
-            }
-            catch (Exception)
-            {
-                // Tarih okunamazsa sona koy.
+                this.userSettingService.SetUserSetting(UserSettingConstants.ForkQueueSortOrder, mode);
             }
 
-            return DateTime.MaxValue;
+            this.NotifyOfPropertyChange(() => this.QueueSortLabel);
+            this.NotifyOfPropertyChange(() => this.IsSortDateOldest);
+            this.NotifyOfPropertyChange(() => this.IsSortDateNewest);
+            this.NotifyOfPropertyChange(() => this.IsSortNameAsc);
+            this.NotifyOfPropertyChange(() => this.IsSortNameDesc);
+            this.NotifyOfPropertyChange(() => this.IsSortSourceOrder);
         }
 
         public void AddSelectionToQueue()
@@ -1268,8 +1275,8 @@ namespace HandBrakeWPF.ViewModels
         {
             bool foundOutOfBound = false;
 
-            // Fork: kuyruğa kaynak dosya tarihine göre eskiden yeniye ekle.
-            foreach (SelectionTitle title in tasks.OrderBy(t => GetSourceFileDate(t.Title?.SourcePath)).ToList())
+            // Fork: kuyruğa seçilen sıralamaya göre ekle (araç çubuğundaki "Sıralama" düğmesi).
+            foreach (SelectionTitle title in QueueSortHelper.Order(tasks, t => t.Title?.SourcePath, this.QueueSortOrder))
             {
                 bool outOfBounds = false;
                 this.SelectedTitle = title.Title;

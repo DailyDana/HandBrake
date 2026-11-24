@@ -65,6 +65,19 @@ namespace HandBrakeWPF.Views
             ((IMainViewModel)this.DataContext).AddToQueueWithErrorHandling();
         }
 
+        // Fork: "Sıralama" düğmesine tıklanınca seçenek menüsünü düğmenin altında aç.
+        private void QueueSortBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.ContextMenu != null)
+            {
+                button.ContextMenu.IsEnabled = true;
+                button.ContextMenu.DataContext = this.DataContext;
+                button.ContextMenu.PlacementTarget = button;
+                button.ContextMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
+                button.ContextMenu.IsOpen = true;
+            }
+        }
+
         private void Presets_PreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
             // Focus the keyboard navigation onto the floating panel and show it. 

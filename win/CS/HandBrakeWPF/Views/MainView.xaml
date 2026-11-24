@@ -271,6 +271,30 @@
                         </StackPanel>
                     </Button>
 
+                    <!-- Fork: Add All / Add Selection kuyruğa ekleme sırası -->
+                    <Button x:Name="QueueSortBtn" Click="QueueSortBtn_Click" ContextMenuService.IsEnabled="False"
+                            AutomationProperties.Name="Kuyruğa ekleme sırası">
+                        <StackPanel Orientation="Horizontal">
+                            <Label VerticalAlignment="Center" Content="{Binding QueueSortLabel}" />
+                            <Path Height="5" Margin="2,2,2,0" VerticalAlignment="Center"
+                                  Data="M 0 0 L 4 4 L 8 0 Z" Fill="{DynamicResource ButtonGlyphBrush}" />
+                        </StackPanel>
+                        <Button.ToolTip>
+                            <TextBlock Text="Add All / Add Selection ile kuyruğa eklenen videoların sırası" />
+                        </Button.ToolTip>
+                        <Button.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Tarihe göre (eskiden yeniye)" IsCheckable="False" IsChecked="{Binding IsSortDateOldest, Mode=OneWay}" Command="{Binding RelayCommand}" CommandParameter="SetQueueSortOrder,0" />
+                                <MenuItem Header="Tarihe göre (yeniden eskiye)" IsCheckable="False" IsChecked="{Binding IsSortDateNewest, Mode=OneWay}" Command="{Binding RelayCommand}" CommandParameter="SetQueueSortOrder,1" />
+                                <Separator />
+                                <MenuItem Header="Ada göre (A → Z)" IsCheckable="False" IsChecked="{Binding IsSortNameAsc, Mode=OneWay}" Command="{Binding RelayCommand}" CommandParameter="SetQueueSortOrder,2" />
+                                <MenuItem Header="Ada göre (Z → A)" IsCheckable="False" IsChecked="{Binding IsSortNameDesc, Mode=OneWay}" Command="{Binding RelayCommand}" CommandParameter="SetQueueSortOrder,3" />
+                                <Separator />
+                                <MenuItem Header="Kaynak sırası (HandBrake varsayılanı)" IsCheckable="False" IsChecked="{Binding IsSortSourceOrder, Mode=OneWay}" Command="{Binding RelayCommand}" CommandParameter="SetQueueSortOrder,4" />
+                            </ContextMenu>
+                        </Button.ContextMenu>
+                    </Button>
+
                     <Button Name="Start" AutomationProperties.Name="{x:Static Properties:Resources.MainView_StartEncode}"
                         Command="{Binding RelayCommand}" CommandParameter="StartEncode"
                         Visibility="{Binding IsEncoding,
