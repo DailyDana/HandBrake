@@ -507,6 +507,7 @@ namespace HandBrakeWPF.ViewModels
                     this.SourceLabel = this.SelectedTitle?.DisplaySourceName;
                     this.CurrentTask.Source = this.selectedTitle.SourcePath;
                     this.CurrentTask.Title = value.TitleNumber;
+                    this.ApplySmartCrop(this.selectedTitle); // Fork: kırpma sekmesi kurulmadan önce
                     this.NotifyOfPropertyChange(() => this.StartEndRangeItems);
                     this.NotifyOfPropertyChange(() => this.SelectedTitle);
                     this.NotifyOfPropertyChange(() => this.Angles);
@@ -1216,6 +1217,85 @@ namespace HandBrakeWPF.ViewModels
             this.NotifyOfPropertyChange(() => this.IsSortNameAsc);
             this.NotifyOfPropertyChange(() => this.IsSortNameDesc);
             this.NotifyOfPropertyChange(() => this.IsSortSourceOrder);
+        }
+
+        /* Fork: akıllı kırpma */
+
+        /// <summary>
+        /// libhb'nin otomatik kırpması 1/4'ten büyük kenarları ve içinde logo/yazı olan kenarları atlar. Başlık ilk
+        /// seçildiğinde tarama önizlemelerinde SmartCropHelper ile kenar aranır; belirgin biçimde daha büyük kenar
+        /// bulunan taraflarda başlığın AutoCropDimensions değeri güncellenir (kırpma sekmesi, Add All ve yön preseti
+        /// bu değeri kullanır). Her başlıkta bir kez çalışır; ForkSmartCrop ayarı false ise kapalıdır.
+        /// </summary>
+        private void ApplySmartCrop(Title title)
+        {
+            if (title == null || title.ForkSmartCropChecked || title.Resolution == null || title.AutoCropDimensions == null)
+            {
+                return;
+            }
+
+            title.ForkSmartCropChecked = true;
+            if (!this.userSettingService.GetUserSetting<bool>(UserSettingConstants.ForkSmartCrop))
+            {
+                return;
+            }
+
+            int srcW = title.Resolution.Width, srcH = title.Resolution.Height;
+            if (srcW < 64 || srcH < 64)
+            {
+                return;
+            }
+
+            try
+            {
+                // Küçük önizleme yeterli: uzun kenar 640 piksel, kırpma ve kenar boşluğu kapalı.
+                double scale = Math.Min(1.0, 640.0 / Math.Max(srcW, srcH));
+                int prevW = Math.Max(16, (int)(srcW * scale) & ~1), prevH = Math.Max(16, (int)(srcH * scale) & ~1);
+
+                EncodeTask probe = new EncodeTask(this.CurrentTask)
+                {
+                    Source = title.SourcePath,
+                    Title = title.TitleNumber,
+                    Cropping = new HandBrake.Interop.Interop.Interfaces.Model.Picture.Cropping(0, 0, 0, 0, (int)HandBrakeWPF.Model.Picture.CropMode.Custom),
+                    Width = prevW,
+                    Height = prevH,
+                    Rotation = 0,
+                    FlipVideo = false,
+                    Padding = new HandBrakeWPF.Model.Filters.PaddingFilter()
+                };
+
+                int previewCount = Math.Max(1, this.userSettingService.GetUserSetting<int>(UserSettingConstants.PreviewScanCount));
+                List<int[]> frames = new List<int[]>();
+                for (int i = 0; i < previewCount; i++)
+                {
+                    var raw = this.scanService.GetRawPreview(probe, i);
+                    if (raw?.RawBitmapData != null)
+                    {
+                        frames.Add(SmartCropHelper.DetectBars(raw.RawBitmapData, raw.StrideWidth, raw.Width, raw.Height));
+                        prevW = raw.Width;
+                        prevH = raw.Height;
+                    }
+                }
+
+                int[] smart = SmartCropHelper.Combine(frames, prevW, prevH, srcW, srcH);
+                var hb = title.AutoCropDimensions;
+                int[] libhb = { hb.Top, hb.Bottom, hb.Left, hb.Right };
+                int[] merged = SmartCropHelper.Merge(libhb, smart, srcW, srcH);
+                if (!merged.SequenceEqual(libhb))
+                {
+                    hb.Top = merged[0];
+                    hb.Bottom = merged[1];
+                    hb.Left = merged[2];
+                    hb.Right = merged[3];
+                    this.logService.LogMessage(string.Format(
+                        "Fork akıllı kırpma: {0} — libhb {1}/{2}/{3}/{4} → {5}/{6}/{7}/{8} (üst/alt/sol/sağ)",
+                        Path.GetFileName(title.SourcePath), libhb[0], libhb[1], libhb[2], libhb[3], merged[0], merged[1], merged[2], merged[3]));
+                }
+            }
+            catch (Exception exc)
+            {
+                this.logService.LogMessage("Fork akıllı kırpma çalıştırılamadı: " + exc.Message);
+            }
         }
 
         /* Fork: dikey / yatay videolara otomatik preset */

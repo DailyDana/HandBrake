@@ -108,6 +108,9 @@ namespace HandBrakeWPF.Services.Scan.Model
 
         public Cropping LooseCropDimensions { get; set; }
 
+        /// <summary>Fork: akıllı kırpma tespiti bu başlıkta çalıştırıldı mı (bir kez yapılır).</summary>
+        public bool ForkSmartCropChecked { get; set; }
+
         /// <summary>
         /// Gets or sets the FPS of the source.
         /// </summary>

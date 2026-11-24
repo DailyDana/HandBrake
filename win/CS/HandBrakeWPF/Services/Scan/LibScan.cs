@@ -219,6 +219,29 @@ namespace HandBrakeWPF.Services.Scan
             return bitmapImage;
         }
 
+        /// <summary>
+        /// Fork: önizleme karesini ham RGB32 piksel olarak döndürür (kırpma tespiti için).
+        /// </summary>
+        public RawPreviewData GetRawPreview(EncodeTask job, int preview)
+        {
+            if (this.instance == null || this.IsScanning)
+            {
+                return null;
+            }
+
+            try
+            {
+                EncodeTaskFactory factory = new EncodeTaskFactory(this.userSettingService, false);
+                JsonEncodeObject jobDict = factory.Create(job);
+                return this.instance.GetPreview(jobDict, preview);
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e);
+                return null;
+            }
+        }
+
         public BitmapImage GetCoverArt(CoverArt artwork, int title)
         {
             RawCoverArtData rawImageData = this.instance.GetCoverArt(title, artwork.ID);

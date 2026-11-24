@@ -74,6 +74,7 @@ namespace HandBrakeWPF
         public const string ForkOrientationPresets = "ForkOrientationPresets"; // Fork: dikey/yatay otomatik preset açık mı
         public const string ForkVerticalPreset = "ForkVerticalPreset"; // Fork: dikey videoların preset adı
         public const string ForkHorizontalPreset = "ForkHorizontalPreset"; // Fork: yatay videoların preset adı
+        public const string ForkSmartCrop = "ForkSmartCrop"; // Fork: libhb'nin kaçırdığı siyah kenarları önizlemeden bul
         public const string FileOverwriteBehaviour = "FileOverwriteBehaviour";
         public const string AutonameFileCollisionBehaviour = "AutonameFileCollisionBehaviour";
         public const string AutonameFilePrePostString = "AutonameFilePrePostString";

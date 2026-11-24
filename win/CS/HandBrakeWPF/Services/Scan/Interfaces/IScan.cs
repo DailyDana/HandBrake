@@ -103,6 +103,9 @@ namespace HandBrakeWPF.Services.Scan.Interfaces
 
         BitmapImage GetCoverArt(CoverArt artwork, int title);
 
+        // Fork: kırpma tespiti için ham RGB32 önizleme karesi.
+        HandBrake.Interop.Interop.Interfaces.Model.Preview.RawPreviewData GetRawPreview(EncodeTask task, int preview);
+
         /// <summary>
         /// Kill the scan
         /// </summary>
